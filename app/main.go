@@ -18,33 +18,31 @@ func main() {
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
 
-	os.Mkdir(JAIL_DIR, 0666)
+	os.Mkdir(JAIL_DIR, 0777)
 
 	copyFrom, err := os.Open(command)
 	if err != nil {
-		fmt.Printf("Failed to open %s, error %s", command, err.Error())
-		os.Exit(1)
+		panic(fmt.Sprintf("Failed to open %s, error %s", command, err.Error()))
 	}
 	defer copyFrom.Close()
 
 	newPath := path.Join(JAIL_DIR, command)
 
-	os.MkdirAll(path.Dir(newPath), 0666)
+	os.MkdirAll(path.Dir(newPath), 0777)
 
-	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_RDWR, 0666)
+	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
-		fmt.Printf("Failed to open %s, error %s", newPath, err.Error())
-		os.Exit(2)
+		panic(fmt.Sprintf("Failed to open %s, error %s", newPath, err.Error()))
 	}
-	defer copyTo.Close()
 
 	_, err = io.Copy(copyTo, copyFrom)
 	if err != nil {
-		fmt.Printf("Failed to copy files, error %s", err.Error())
-		os.Exit(3)
+		panic(fmt.Sprintf("Failed to copy file %s, error %s", newPath, err.Error()))
 	}
 
-	args := append([]string{JAIL_DIR, command}, userArgs...)
+	copyTo.Close()
+
+	args := append([]string{JAIL_DIR, newPath}, userArgs...)
 
 	cmd := exec.Command("chroot", args...)
 
