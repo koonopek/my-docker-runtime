@@ -23,7 +23,7 @@ func main() {
 
 	copyFrom, err := os.Open(command)
 	if err != nil {
-		fmt.Printf("Failed to open %s", command)
+		fmt.Printf("Failed to open %s: error %s", command, err.Error())
 		os.Exit(1)
 	}
 	defer copyFrom.Close()
