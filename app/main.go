@@ -19,6 +19,8 @@ func main() {
 
 	args := append([]string{"chroot", "jail"}, userArgs...)
 
+	fmt.Printf("args %s", args)
+
 	cmd := exec.Command(command, args...)
 
 	cmd.Stdout = os.Stdout
