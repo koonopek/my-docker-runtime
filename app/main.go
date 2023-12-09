@@ -1,3 +1,6 @@
+//go:build linux
+// +build linux
+
 package main
 
 import (
@@ -6,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"syscall"
 )
 
 const JAIL_DIR = "jail"
@@ -43,6 +47,8 @@ func main() {
 	copyTo.Close()
 
 	args := append([]string{JAIL_DIR, command}, userArgs...)
+
+	fmt.Printf("%d %d", syscall.CLONE_NEWUTS, syscall.CLONE_NEWPID)
 
 	cmd := exec.Command("chroot", args...)
 
