@@ -30,8 +30,7 @@ func main() {
 
 	newPath := path.Join(JAIL_DIR, command)
 
-	path.Dir(newPath)
-	os.MkdirAll(newPath, 0666)
+	os.MkdirAll(path.Dir(newPath), 0666)
 
 	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, fs.ModeAppend)
 	if err != nil {
