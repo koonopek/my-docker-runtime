@@ -48,9 +48,11 @@ func main() {
 
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 
-	fmt.Printf("%d %d", syscall.CLONE_NEWUTS, syscall.CLONE_NEWPID)
-
 	cmd := exec.Command("chroot", args...)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWUSER,
+	}
 
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
