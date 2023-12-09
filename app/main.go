@@ -23,7 +23,7 @@ func main() {
 
 	copyFrom, err := os.Open(command)
 	if err != nil {
-		fmt.Printf("Failed to open %s: error %s", command, err.Error())
+		fmt.Printf("Failed to open %s, error %s", command, err.Error())
 		os.Exit(1)
 	}
 	defer copyFrom.Close()
@@ -41,7 +41,7 @@ func main() {
 
 	bytesCopied, err := io.Copy(copyFrom, copyTo)
 	if err != nil {
-		fmt.Printf("Failed to copy files")
+		fmt.Printf("Failed to copy files, error %s", err.Error())
 		os.Exit(3)
 	}
 	fmt.Printf("Succesfully copied %d from %s to %s", bytesCopied, command, newPath)
