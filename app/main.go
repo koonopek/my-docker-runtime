@@ -15,7 +15,7 @@ const JAIL_DIR = "jail"
 func main() {
 	var err error
 
-	dockerExplorer := os.Args[2]
+	dockerExplorer := os.Args[3]
 
 	// Uncomment this block to pass the first stage!
 	command := os.Args[3]
