@@ -4,6 +4,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,13 +12,20 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"syscall"
 )
 
 const JAIL_DIR = "jail"
 
 func main() {
 	var err error
+
+	imageName := "ubuntu"
+	err = fetchImage(imageName)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	os.Exit(0)
 
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
@@ -44,9 +52,9 @@ func runInContainer(command string, userArgs []string, err error) error {
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 	cmd := exec.Command("chroot", args...)
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: uintptr(syscall.CLONE_NEWPID),
-	}
+	// cmd.SysProcAttr = &syscall.SysProcAttr{
+	// 	Cloneflags: uintptr(syscall.CLONE_NEWPID),
+	// }
 
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
@@ -79,7 +87,11 @@ func copyFileToJail(toCopy string) {
 	copyTo.Close()
 }
 
-func fetchImage(imageName *string) error {
+type AuthResponse struct {
+	token string `json:token`
+}
+
+func fetchImage(imageName string) error {
 	response, err := http.Get(fmt.Sprintf("https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/%s:pull", imageName))
 
 	if err != nil || response.StatusCode != 200 {
@@ -92,7 +104,10 @@ func fetchImage(imageName *string) error {
 		return fmt.Errorf("Failed to read body")
 	}
 
-	fmt.Sprintf(string(body))
+	authResponse := AuthResponse{}
+	err = json.Unmarshal(body, &authResponse)
+
+	fmt.Printf("%s", authResponse.token)
 
 	return nil
 }
