@@ -31,7 +31,7 @@ func main() {
 	newPath := path.Join(JAIL_DIR, command)
 	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, fs.ModeAppend)
 	if err != nil {
-		fmt.Printf("Failed to open %s", command)
+		fmt.Printf("Failed to open %s, error %s", newPath, err.Error())
 		os.Exit(2)
 	}
 	defer copyTo.Close()
