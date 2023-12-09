@@ -38,12 +38,11 @@ func main() {
 	}
 	defer copyTo.Close()
 
-	bytesCopied, err := io.Copy(copyTo, copyFrom)
+	_, err = io.Copy(copyTo, copyFrom)
 	if err != nil {
 		fmt.Printf("Failed to copy files, error %s", err.Error())
 		os.Exit(3)
 	}
-	fmt.Printf("Succesfully copied %d from %s to %s", bytesCopied, command, newPath)
 
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 
