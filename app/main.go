@@ -51,7 +51,7 @@ func main() {
 	cmd := exec.Command("chroot", args...)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: uintptr(syscall.CLONE_NEWUTS),
+		Cloneflags: uintptr(syscall.CLONE_NEWPID),
 	}
 
 	cmd.Stdout = os.Stdout
