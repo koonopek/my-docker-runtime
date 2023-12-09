@@ -38,7 +38,7 @@ func main() {
 	}
 	defer copyTo.Close()
 
-	bytesCopied, err := io.Copy(copyFrom, copyTo)
+	bytesCopied, err := io.Copy(copyTo, copyFrom)
 	if err != nil {
 		fmt.Printf("Failed to copy files, error %s", err.Error())
 		os.Exit(3)
