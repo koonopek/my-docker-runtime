@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"syscall"
 )
 
 const JAIL_DIR = "jail"
@@ -50,9 +49,9 @@ func main() {
 
 	cmd := exec.Command("chroot", args...)
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: uintptr(syscall.CLONE_NEWPID),
-	}
+	// cmd.SysProcAttr = &syscall.SysProcAttr{
+	// 	Cloneflags: uintptr(syscall.CLONE_NEWPID),
+	// }
 
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
