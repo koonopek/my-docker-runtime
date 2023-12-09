@@ -31,7 +31,7 @@ func main() {
 
 	os.MkdirAll(path.Dir(newPath), 0666)
 
-	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, os.ModeAppend)
+	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_RDWR, os.ModeAppend)
 	if err != nil {
 		fmt.Printf("Failed to open %s, error %s", newPath, err.Error())
 		os.Exit(2)
