@@ -15,25 +15,23 @@ const JAIL_DIR = "jail"
 func main() {
 	var err error
 
-	dockerExplorer := os.Args[3]
-
 	// Uncomment this block to pass the first stage!
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
 
 	os.Mkdir(JAIL_DIR, 0666)
 
-	copyFrom, err := os.Open(dockerExplorer)
+	copyFrom, err := os.Open(command)
 	if err != nil {
-		fmt.Printf("Failed to open %s", dockerExplorer)
+		fmt.Printf("Failed to open %s", command)
 		os.Exit(1)
 	}
 	defer copyFrom.Close()
 
-	newPath := path.Join(JAIL_DIR, dockerExplorer)
+	newPath := path.Join(JAIL_DIR, command)
 	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, fs.ModeAppend)
 	if err != nil {
-		fmt.Printf("Failed to open %s", dockerExplorer)
+		fmt.Printf("Failed to open %s", command)
 		os.Exit(2)
 	}
 	defer copyTo.Close()
@@ -43,7 +41,7 @@ func main() {
 		fmt.Printf("Failed to copy files")
 		os.Exit(3)
 	}
-	fmt.Printf("Succesfully copied %d from %s to %s", bytesCopied, dockerExplorer, newPath)
+	fmt.Printf("Succesfully copied %d from %s to %s", bytesCopied, command, newPath)
 
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 
