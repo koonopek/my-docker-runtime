@@ -28,7 +28,7 @@ func main() {
 		os.Exit(0)
 	default:
 		fmt.Printf("Child process exited abnormally %s", err.Error())
-		os.Exit(255)
+		os.Exit(124)
 	}
 
 }
