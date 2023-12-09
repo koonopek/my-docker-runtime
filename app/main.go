@@ -17,11 +17,11 @@ func main() {
 
 	os.Mkdir(JAIL_DIR, 0666)
 
-	args := append([]string{"chroot", "jail"}, userArgs...)
+	args := append([]string{JAIL_DIR, command}, userArgs...)
 
 	fmt.Printf("args %s", args)
 
-	cmd := exec.Command(command, args...)
+	cmd := exec.Command("chroot", args...)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
