@@ -44,7 +44,7 @@ func main() {
 		os.Exit(3)
 	}
 
-	args := append([]string{JAIL_DIR, newPath}, userArgs...)
+	args := append([]string{JAIL_DIR, command}, userArgs...)
 
 	cmd := exec.Command("chroot", args...)
 
