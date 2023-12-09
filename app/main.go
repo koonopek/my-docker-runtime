@@ -2,14 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path"
 )
 
 const JAIL_DIR = "jail"
+const TO_EXECUTE = "/usr/local/bin/docker-explorer"
 
 // Usage: your_docker.sh run <image> <command> <arg1> <arg2> ...
 func main() {
+	var err error
 
 	// Uncomment this block to pass the first stage!
 	command := os.Args[3]
@@ -17,9 +22,29 @@ func main() {
 
 	os.Mkdir(JAIL_DIR, 0666)
 
-	args := append([]string{JAIL_DIR, command}, userArgs...)
+	copyFrom, err := os.Open(TO_EXECUTE)
+	if err != nil {
+		fmt.Printf("Failed to open %s", TO_EXECUTE)
+		os.Exit(1)
+	}
+	defer copyFrom.Close()
 
-	fmt.Printf("args %s", args)
+	newPath := path.Join(JAIL_DIR, TO_EXECUTE)
+	copyTo, err := os.OpenFile(newPath, os.O_CREATE|os.O_WRONLY, fs.ModeAppend)
+	if err != nil {
+		fmt.Printf("Failed to open %s", TO_EXECUTE)
+		os.Exit(2)
+	}
+	defer copyTo.Close()
+
+	bytesCopied, err := io.Copy(copyFrom, copyTo)
+	if err != nil {
+		fmt.Printf("Failed to copy files")
+		os.Exit(3)
+	}
+	fmt.Printf("Succesfully copied %d from %s to %s", bytesCopied, TO_EXECUTE, newPath)
+
+	args := append([]string{JAIL_DIR, command}, userArgs...)
 
 	cmd := exec.Command("chroot", args...)
 
@@ -27,7 +52,7 @@ func main() {
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 
 	switch err := err.(type) {
 	case nil:
