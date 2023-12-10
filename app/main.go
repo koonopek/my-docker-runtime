@@ -52,8 +52,8 @@ func main() {
 }
 
 func runInContainer(command string, userArgs []string, err error) error {
-	fmt.Printf("Running in container %d \n", time.Now().UnixNano())
 	args := append([]string{JAIL_DIR, command}, userArgs...)
+	fmt.Printf("Running in container %d \n", time.Now().UnixNano())
 	cmd := exec.Command("chroot", args...)
 
 	// other flags could be added to make it more docker like network namespaces for example
@@ -334,6 +334,12 @@ func untar(reader io.Reader, dst string) error {
 		target := filepath.Join(dst, header.Name)
 
 		switch header.Typeflag {
+		case tar.TypeSymlink:
+			err = os.Symlink(header.Linkname, target)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Create link from %s to %s \n", header.Linkname, target)
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
 				if err := os.MkdirAll(target, 0755); err != nil {
@@ -346,8 +352,6 @@ func untar(reader io.Reader, dst string) error {
 				return err
 			}
 			defer f.Close()
-
-			// copy contents to file
 			if _, err := io.Copy(f, tr); err != nil {
 				return err
 			}
