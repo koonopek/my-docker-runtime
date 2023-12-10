@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
+	"time"
 )
 
 const JAIL_DIR = "jail"
@@ -25,14 +26,13 @@ func main() {
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
 
-	fmt.Printf("Input args %s", os.Args[1:])
+	fmt.Printf("Input args %s \n", os.Args[1:])
 
 	os.Mkdir(JAIL_DIR, 0777)
 
 	err = fetchImage(os.Args[2], JAIL_DIR)
 	if err != nil {
-		fmt.Printf("Failed to fetch image, error: %s", err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 
 	// copyFileToJail(command)
@@ -52,6 +52,7 @@ func main() {
 }
 
 func runInContainer(command string, userArgs []string, err error) error {
+	fmt.Printf("Running in container %d", time.Now())
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 	cmd := exec.Command("chroot", args...)
 
@@ -189,6 +190,7 @@ func fetchImage(imageName string, dst string) error {
 	} else {
 		fmt.Printf("Failed to download  %d layers", layersCount-successCount)
 	}
+	fmt.Printf("Fetching images complete %d", time.Now())
 
 	return nil
 }
