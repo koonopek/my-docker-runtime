@@ -169,7 +169,7 @@ func fetchImage(imageName string, dst string) error {
 	layersCount := len(manifestOutput.Layers)
 
 	if layersCount == 0 {
-		fmt.Printf("Cant read manifest properly %s", string(manifestBody))
+		fmt.Printf("Cant read manifest properly %s content-type %s", string(manifestBody), manifestResponse.Header.Get("Content-Type"))
 	}
 
 	doneChan := make(chan bool, layersCount)
