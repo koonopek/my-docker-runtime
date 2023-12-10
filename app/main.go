@@ -147,12 +147,10 @@ func fetchImage(imageName string, dst string) error {
 	}
 
 	authOutput := AuthOutput{}
-	err = json.Unmarshal(body, &authOutput)
+	decodeJson(body, &authOutput)
 
-	layers := fetchLayersDigests(imageName, httpClient, authToken)
+	layers, err := fetchLayersDigests(imageName, httpClient, authOutput.Token)
 	layersCount := len(layers)
-
-	fmt.Printf("Cant read manifest properly %s content-type %s", string(manifestBody))
 
 	doneChan := make(chan bool, layersCount)
 	wg := sync.WaitGroup{}
@@ -166,7 +164,7 @@ func fetchImage(imageName string, dst string) error {
 			fmt.Printf("Fetching %s:%s [%d/%d]\n", imageName, digest, jobNumber+1, layersCount)
 			err := fetchLayer(imageName, digest, authOutput.Token, dst)
 			doneChan <- err == nil
-		}(manifestOutput.Layers[j].Digest, j)
+		}(layers[j], j)
 	}
 
 	wg.Wait()
