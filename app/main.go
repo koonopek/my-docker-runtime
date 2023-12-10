@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sync"
 	"syscall"
 )
 
@@ -155,8 +156,8 @@ func fetchImage(imageName string, dst string) error {
 	}
 	layersCount := len(layers)
 
-	// doneChan := make(chan bool, layersCount)
-	// wg := sync.WaitGroup{}
+	doneChan := make(chan bool, layersCount)
+	wg := sync.WaitGroup{}
 
 	fmt.Printf("Layers to fetch %d \n", layersCount)
 
@@ -164,27 +165,25 @@ func fetchImage(imageName string, dst string) error {
 		return fmt.Errorf("No layers found id doesn't have sens")
 	}
 
-	// for j := 0; j < layersCount; j++ {
-	// 	wg.Add(1)
-	// 	go func(digest string, jobNumber int) {
-	// 		defer wg.Done()
-	// 		fmt.Printf("Fetching %s:%s [%d/%d]\n", imageName, digest, jobNumber+1, layersCount)
-	// 		err := fetchLayer(imageName, digest, authOutput.Token, dst)
-	// 		doneChan <- err == nil
-	// 	}(layers[j], j)
-	// }
+	for j := 0; j < layersCount; j++ {
+		wg.Add(1)
+		go func(digest string, jobNumber int) {
+			defer wg.Done()
+			fmt.Printf("Fetching %s:%s [%d/%d]\n", imageName, digest, jobNumber+1, layersCount)
+			err := fetchLayer(imageName, digest, authOutput.Token, dst)
+			doneChan <- err == nil
+		}(layers[j], j)
+	}
 
-	fetchLayer(imageName, layers[0], authOutput.Token, dst)
+	wg.Wait()
+	close(doneChan)
 
-	// wg.Wait()
-	// close(doneChan)
-
-	successCount := 1
-	// for result := range doneChan {
-	// 	if result == true {
-	// 		successCount++
-	// 	}
-	// }
+	successCount := 0
+	for result := range doneChan {
+		if result == true {
+			successCount++
+		}
+	}
 	if successCount == layersCount {
 		fmt.Printf("Successfully fetched all %d layers", layersCount)
 	} else {
