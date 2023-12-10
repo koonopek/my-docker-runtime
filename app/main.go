@@ -161,6 +161,10 @@ func fetchImage(imageName string, dst string) error {
 
 	fmt.Printf("Layers to fetch %d \n", layersCount)
 
+	if layersCount == 0 {
+		return fmt.Errorf("No layers found id doesn't have sens")
+	}
+
 	for j := 0; j < layersCount; j++ {
 		wg.Add(1)
 		go func(digest string, jobNumber int) {
