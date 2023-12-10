@@ -339,7 +339,6 @@ func untar(reader io.Reader, dst string) error {
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Create link from %s to %s \n", header.Linkname, target)
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
 				if err := os.MkdirAll(target, 0755); err != nil {
