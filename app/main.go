@@ -27,13 +27,13 @@ func main() {
 
 	fmt.Printf("Input args %s", os.Args[1:])
 
+	os.Mkdir(JAIL_DIR, 0777)
+
 	err = fetchImage(os.Args[2], JAIL_DIR)
 	if err != nil {
 		fmt.Printf("Failed to fetch image, error: %s", err.Error())
 		os.Exit(1)
 	}
-
-	os.Mkdir(JAIL_DIR, 0777)
 
 	// copyFileToJail(command)
 
