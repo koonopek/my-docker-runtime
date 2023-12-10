@@ -52,7 +52,7 @@ func main() {
 }
 
 func runInContainer(command string, userArgs []string, err error) error {
-	fmt.Printf("Running in container %d", time.Now())
+	fmt.Printf("Running in container %d \n", time.Now().Unix())
 	args := append([]string{JAIL_DIR, command}, userArgs...)
 	cmd := exec.Command("chroot", args...)
 
@@ -186,11 +186,11 @@ func fetchImage(imageName string, dst string) error {
 		}
 	}
 	if successCount == layersCount {
-		fmt.Printf("Successfully fetched all %d layers", layersCount)
+		fmt.Printf("Successfully fetched all %d layers\n", layersCount)
 	} else {
 		fmt.Printf("Failed to download  %d layers", layersCount-successCount)
 	}
-	fmt.Printf("Fetching images complete %d", time.Now())
+	fmt.Printf("Fetching images complete %d\n", time.Now().Unix())
 
 	return nil
 }
