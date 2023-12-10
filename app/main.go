@@ -57,7 +57,7 @@ func runInContainer(command string, userArgs []string, err error) error {
 
 	// other flags could be added to make it more docker like network namespaces for example
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		// Cloneflags: uintptr(syscall.CLONE_NEWPID),
+		Cloneflags: uintptr(syscall.CLONE_NEWPID),
 	}
 
 	cmd.Stdout = os.Stdout
