@@ -35,7 +35,7 @@ func main() {
 
 	os.Mkdir(JAIL_DIR, 0777)
 
-	copyFileToJail(command)
+	// copyFileToJail(command)
 
 	err = runInContainer(command, userArgs, err)
 
