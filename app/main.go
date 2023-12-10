@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"sync"
 	"syscall"
-	"time"
 )
 
 const JAIL_DIR = "jail"
@@ -179,12 +178,10 @@ func fetchImage(imageName string, dst string) error {
 			successCount++
 		}
 	}
-	if successCount == layersCount {
-		fmt.Printf("Successfully fetched all %d layers\n", layersCount)
-	} else {
-		fmt.Printf("Failed to download  %d layers", layersCount-successCount)
+
+	if successCount != layersCount {
+		return fmt.Errorf("Failed to download  %d layers", layersCount-successCount)
 	}
-	fmt.Printf("Fetching images complete %d\n", time.Now().UnixNano())
 
 	return nil
 }
