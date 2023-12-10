@@ -204,7 +204,7 @@ func fetchLayersDigests(imageName string, httpClient http.Client, authToken stri
 	manifestResponse, err := httpClient.Do(&request)
 
 	if err != nil || manifestResponse.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to unmarshal manifest body, %s", err.Error())
+		return nil, fmt.Errorf("failed to fetch manfiest error %s", err.Error())
 	}
 
 	manifestBody, err := io.ReadAll(manifestResponse.Body)
@@ -220,7 +220,7 @@ func fetchLayersDigests(imageName string, httpClient http.Client, authToken stri
 
 			var linuxManifestDigest string
 			for i := 0; i < len(manifestOutput.Manifests); i++ {
-				if manifestOutput.Manifests[i].Platform.Architecture == "amd64" && manifestOutput.Manifests[i].Platform.Architecture == "linux" {
+				if manifestOutput.Manifests[i].Platform.Architecture == "amd64" && manifestOutput.Manifests[i].Platform.Os == "linux" {
 					linuxManifestDigest = manifestOutput.Manifests[i].Digest
 				}
 			}
