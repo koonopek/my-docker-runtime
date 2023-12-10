@@ -179,7 +179,7 @@ func fetchImage(imageName string, dst string) error {
 	// wg.Wait()
 	// close(doneChan)
 
-	successCount := 0
+	successCount := 1
 	// for result := range doneChan {
 	// 	if result == true {
 	// 		successCount++
