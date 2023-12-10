@@ -56,7 +56,7 @@ func runInContainer(command string, userArgs []string, err error) error {
 
 	// other flags could be added to make it more docker like network namespaces for example
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: uintptr(syscall.CLONE_NEWPID),
+		// Cloneflags: uintptr(syscall.CLONE_NEWPID),
 	}
 
 	cmd.Stdout = os.Stdout
@@ -109,6 +109,20 @@ type ManifestOutput struct {
 	} `json:"layers"`
 }
 
+type MultiManifestOutput struct {
+	Manifests []struct {
+		Digest    string `json:"digest"`
+		MediaType string `json:"mediaType"`
+		Platform  struct {
+			Architecture string `json:"architecture"`
+			Os           string `json:"os"`
+		} `json:"platform,omitempty"`
+		Size int `json:"size"`
+	} `json:"manifests"`
+	MediaType     string `json:"mediaType"`
+	SchemaVersion int    `json:"schemaVersion"`
+}
+
 func fetchImage(imageName string, dst string) error {
 	httpClient := http.Client{}
 
@@ -135,42 +149,10 @@ func fetchImage(imageName string, dst string) error {
 	authOutput := AuthOutput{}
 	err = json.Unmarshal(body, &authOutput)
 
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal auth response")
-	}
+	layers := fetchLayersDigests(imageName, httpClient, authToken)
+	layersCount := len(layers)
 
-	headers := map[string][]string{
-		"Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
-		"Authorization": {fmt.Sprintf("Bearer %s", authOutput.Token)},
-	}
-
-	manifestUrl, err := url.Parse(fmt.Sprintf("https://registry.hub.docker.com/v2/library/%s/manifests/mantic", imageName))
-
-	request := http.Request{Method: "GET", URL: manifestUrl, Header: headers}
-	manifestResponse, err := httpClient.Do(&request)
-
-	if err != nil || manifestResponse.StatusCode != 200 {
-		return fmt.Errorf("Failed to fetch manifest, error %d", manifestResponse.StatusCode)
-	}
-
-	manifestBody, err := io.ReadAll(manifestResponse.Body)
-
-	if err != nil {
-		return fmt.Errorf("Failed to read manifest body")
-	}
-
-	manifestOutput := ManifestOutput{}
-	err = json.Unmarshal(manifestBody, &manifestOutput)
-
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal manifest body, %s", err.Error())
-	}
-
-	layersCount := len(manifestOutput.Layers)
-
-	if layersCount == 0 {
-		fmt.Printf("Cant read manifest properly %s content-type %s", string(manifestBody), manifestResponse.Header.Get("Content-Type"))
-	}
+	fmt.Printf("Cant read manifest properly %s content-type %s", string(manifestBody))
 
 	doneChan := make(chan bool, layersCount)
 	wg := sync.WaitGroup{}
@@ -203,6 +185,85 @@ func fetchImage(imageName string, dst string) error {
 	}
 
 	return nil
+}
+
+func fetchLayersDigests(imageName string, httpClient http.Client, authToken string) ([]string, error) {
+	headers := map[string][]string{
+		"Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
+		"Authorization": {fmt.Sprintf("Bearer %s", authToken)},
+	}
+
+	manifestUrl, err := url.Parse(fmt.Sprintf("https://registry.hub.docker.com/v2/library/%s/manifests/latest", imageName))
+
+	if err != nil {
+		return nil, err
+	}
+
+	request := http.Request{Method: "GET", URL: manifestUrl, Header: headers}
+	manifestResponse, err := httpClient.Do(&request)
+
+	if err != nil || manifestResponse.StatusCode != 200 {
+		return nil, fmt.Errorf("failed to unmarshal manifest body, %s", err.Error())
+	}
+
+	manifestBody, err := io.ReadAll(manifestResponse.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	switch manifestResponse.Header.Get("Content-Type") {
+	case "application/vnd.oci.image.index.v1+jsonLayers":
+		{
+			manifestOutput := MultiManifestOutput{}
+			decodeJson(manifestBody, &manifestOutput)
+
+			var linuxManifestDigest string
+			for i := 0; i < len(manifestOutput.Manifests); i++ {
+				if manifestOutput.Manifests[i].Platform.Architecture == "amd64" && manifestOutput.Manifests[i].Platform.Architecture == "linux" {
+					linuxManifestDigest = manifestOutput.Manifests[i].Digest
+				}
+			}
+
+			headers := map[string][]string{
+				"Authorization": {fmt.Sprintf("Bearer %s", authToken)},
+			}
+
+			manifestUrl, err := url.Parse(fmt.Sprintf("https://registry.hub.docker.com/v2/library/%s/blobs/%s", imageName, linuxManifestDigest))
+
+			if err != nil {
+				return nil, err
+			}
+
+			request := http.Request{Method: "GET", URL: manifestUrl, Header: headers}
+
+			singleManifestResponse, err := httpClient.Do(&request)
+
+			if err != nil {
+				return nil, err
+			}
+
+			body, err := io.ReadAll(singleManifestResponse.Body)
+
+			if err != nil {
+				return nil, err
+			}
+
+			fmt.Printf("body %s", body)
+		}
+	default:
+		{
+			manifestOutput := ManifestOutput{}
+			decodeJson(manifestBody, &manifestOutput)
+
+			layers := make([]string, len(manifestOutput.Layers))
+			for i := 0; i < len(layers); i++ {
+				layers[i] = manifestOutput.Layers[i].Digest
+			}
+			return layers, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Weird stuff happened")
 }
 
 func fetchLayer(imageName string, layerHash string, authToken string, dstPath string) error {
@@ -283,5 +344,13 @@ func untar(reader io.Reader, dst string) error {
 				return err
 			}
 		}
+	}
+}
+
+func decodeJson(body []byte, output interface{}) {
+	err := json.Unmarshal(body, output)
+
+	if err != nil {
+		panic("Failed to decode json to given structure")
 	}
 }
