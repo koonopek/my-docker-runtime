@@ -150,6 +150,9 @@ func fetchImage(imageName string, dst string) error {
 	decodeJson(body, &authOutput)
 
 	layers, err := fetchLayersDigests(imageName, httpClient, authOutput.Token)
+	if err != nil {
+		return fmt.Errorf("Failed to fetch layer digests, error: %s", err.Error())
+	}
 	layersCount := len(layers)
 
 	doneChan := make(chan bool, layersCount)
