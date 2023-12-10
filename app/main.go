@@ -25,6 +25,8 @@ func main() {
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
 
+	fmt.Printf("Input args %s", os.Args[1:])
+
 	err = fetchImage(os.Args[2], JAIL_DIR)
 	if err != nil {
 		fmt.Printf("Failed to fetch image, error: %s", err.Error())
