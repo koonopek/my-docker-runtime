@@ -140,11 +140,11 @@ func fetchImage(imageName string, dst string) error {
 	}
 
 	headers := map[string][]string{
-		// "Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
+		"Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
 		"Authorization": {fmt.Sprintf("Bearer %s", authOutput.Token)},
 	}
 
-	manifestUrl, err := url.Parse(fmt.Sprintf("https://registry.hub.docker.com/v2/library/%s/manifests/latest", imageName))
+	manifestUrl, err := url.Parse(fmt.Sprintf("https://registry.hub.docker.com/v2/library/%s/manifests/mantic", imageName))
 
 	request := http.Request{Method: "GET", URL: manifestUrl, Header: headers}
 	manifestResponse, err := httpClient.Do(&request)
