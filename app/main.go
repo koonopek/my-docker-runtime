@@ -168,10 +168,14 @@ func fetchImage(imageName string, dst string) error {
 
 	layersCount := len(manifestOutput.Layers)
 
+	if layersCount == 0 {
+		fmt.Printf("Cant read manifest properly %s", string(manifestBody))
+	}
+
 	doneChan := make(chan bool, layersCount)
 	wg := sync.WaitGroup{}
 
-	fmt.Printf("Layers to fetch %d ", layersCount)
+	fmt.Printf("Layers to fetch %d \n", layersCount)
 
 	for j := 0; j < layersCount; j++ {
 		wg.Add(1)
