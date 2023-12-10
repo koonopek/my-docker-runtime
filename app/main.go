@@ -140,7 +140,7 @@ func fetchImage(imageName string, dst string) error {
 	}
 
 	headers := map[string][]string{
-		"Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
+		// "Accept":        {"application/vnd.docker.distribution.manifest.v2+json"},
 		"Authorization": {fmt.Sprintf("Bearer %s", authOutput.Token)},
 	}
 
