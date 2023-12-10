@@ -22,15 +22,14 @@ const JAIL_DIR = "jail"
 func main() {
 	var err error
 
-	imageName := "ubuntu"
-	err = fetchImage(imageName, JAIL_DIR)
+	command := os.Args[3]
+	userArgs := os.Args[4:len(os.Args)]
+
+	err = fetchImage(os.Args[2], JAIL_DIR)
 	if err != nil {
 		fmt.Printf("Failed to fetch image, error: %s", err.Error())
 		os.Exit(1)
 	}
-
-	command := os.Args[3]
-	userArgs := os.Args[4:len(os.Args)]
 
 	os.Mkdir(JAIL_DIR, 0777)
 
