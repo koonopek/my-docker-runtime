@@ -26,8 +26,6 @@ func main() {
 	command := os.Args[3]
 	userArgs := os.Args[4:len(os.Args)]
 
-	fmt.Printf("Input args %s \n", os.Args[1:])
-
 	os.Mkdir(JAIL_DIR, 0777)
 
 	err = fetchImage(os.Args[2], JAIL_DIR)
@@ -53,7 +51,6 @@ func main() {
 
 func runInContainer(command string, userArgs []string, err error) error {
 	args := append([]string{JAIL_DIR, command}, userArgs...)
-	fmt.Printf("Running in container %d \n", time.Now().UnixNano())
 	cmd := exec.Command("chroot", args...)
 
 	// other flags could be added to make it more docker like network namespaces for example
@@ -160,8 +157,6 @@ func fetchImage(imageName string, dst string) error {
 	doneChan := make(chan bool, layersCount)
 	wg := sync.WaitGroup{}
 
-	fmt.Printf("Layers to fetch %d \n", layersCount)
-
 	if layersCount == 0 {
 		return fmt.Errorf("No layers found id doesn't have sens")
 	}
@@ -170,7 +165,6 @@ func fetchImage(imageName string, dst string) error {
 		wg.Add(1)
 		go func(digest string, jobNumber int) {
 			defer wg.Done()
-			fmt.Printf("Fetching %s:%s [%d/%d]\n", imageName, digest, jobNumber+1, layersCount)
 			err := fetchLayer(imageName, digest, authOutput.Token, dst)
 			doneChan <- err == nil
 		}(layers[j], j)
